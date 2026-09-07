@@ -87,7 +87,6 @@ export default function TestScreen({ navigation }) {
 
   console.log('현재 큐 길이:', quizQueue.length);
   console.log('현재 퀴즈 인덱스:', currentIndex);
-  console.log('현재 렌더링할 아이템:', quizQueue[currentIndex]);
 
   return (
     <SafeAreaView style={styles.container}>

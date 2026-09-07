@@ -9,11 +9,15 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, o
   const [isCorrectResult, setIsCorrectResult] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   
+  // [추가] 유의어 입력 시 띄울 피드백 메시지 상태
+  const [synonymMessage, setSynonymMessage] = useState('');
+
   // 앞면(문제 풀이 폼)과 뒷면(페르소나 카드) 전환을 위한 플립 상태
   const [isFlipped, setIsFlipped] = useState(false);
 
   const targetWord = currentItem.word;
   const currentVariant = currentItem.variants.default;
+  const synonyms = currentItem.synonyms || []; // 단어장에 정의된 유의어 배열 (없으면 빈 배열)
 
   const progressPercent = Math.min(((currentIndex + 1) / totalLength) * 100, 100);
   const progressText = `${String(currentIndex + 1).padStart(2, '0')}/${String(totalLength).padStart(2, '0')}`;
@@ -57,7 +61,10 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, o
                   key={index}
                   style={styles.inlineInputBox}
                   value={userInput}
-                  onChangeText={setUserInput}
+                  onChangeText={(text) => {
+                    setUserInput(text);
+                    if (synonymMessage) setSynonymMessage(''); // 타이핑 다시 시작하면 유의어 메시지 초기화
+                  }}
                   autoCapitalize="none"
                   autoCorrect={false}
                   placeholder="_____ "
@@ -87,17 +94,29 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, o
   const handleSubmitCheck = () => {
     if (!userInput.trim()) return;
     const cleanInput = userInput.trim().toLowerCase();
-    const correct = cleanInput === targetWord.toLowerCase();
-
-    setIsCorrectResult(correct);
-    setIsEvaluated(true);
-
-    if (correct) {
+    
+    // 1. 정답 체크
+    if (cleanInput === targetWord.toLowerCase()) {
+      setIsCorrectResult(true);
+      setIsEvaluated(true);
+      setSynonymMessage('');
       const nextText = !currentItem.interval ? '정답! 내일 복습' : '정답! 3일 뒤 복습';
       setFeedbackText(nextText);
-    } else {
-      setFeedbackText('오답! 잠시 후 복습');
+      return;
     }
+
+    // 2. 유의어 체크 (유의어 목록에 포함되어 있다면 오답 처리 안 하고 기회 부여)
+    const isSynonymMatch = synonyms.map(s => s.toLowerCase()).includes(cleanInput);
+    if (isSynonymMatch) {
+      setSynonymMessage(`'${userInput.trim()}'도 의미가 통하는 좋은 답이에요. 이 퀴즈가 찾는 다른 단어도 떠올려 볼까요?`);
+      return;
+    }
+
+    // 3. 완전 오답 처리
+    setIsCorrectResult(false);
+    setIsEvaluated(true);
+    setSynonymMessage('');
+    setFeedbackText('오답! 잠시 후 복습');
   };
 
   const handleNextStep = () => {
@@ -108,8 +127,9 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, o
     }
     setUserInput('');
     setIsEvaluated(false);
-    setIsFlipped(false); // 다음 문제로 갈 때는 앞면으로 초기화
+    setIsFlipped(false);
     setFeedbackText('');
+    setSynonymMessage('');
   };
 
   return (
@@ -131,17 +151,15 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, o
           </View>
         </View>
 
-        {/* 퀴즈 카드 영역 (탭하면 앞뒤로 플립 토글) */}
+        {/* 퀴즈 카드 영역 */}
         <View style={styles.cardWrapperOuter}>
           <View style={[styles.cardTabBadge, isEvaluated && (isCorrectResult ? styles.badgeCorrect : styles.badgeIncorrect)]}>
             <Text style={styles.cardTabBadgeText}>{currentBadgeText}</Text>
           </View>
 
-          {/* 정답을 맞힌 이후에만 카드를 탭해서 뒤집을 수 있게 하거나, 언제든 플립 가능하게 처리 */}
           <TouchableWithoutFeedback onPress={() => isEvaluated && setIsFlipped(!isFlipped)}>
             <View style={styles.cardContainerWrapper}>
               {!isFlipped ? (
-                /* [앞면] 기존 문제 풀이 폼 */
                 <View style={styles.quizCard}>
                   <View style={styles.topInfoBox}>
                     {renderHighlightedTranslation()}
@@ -151,6 +169,13 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, o
                     {renderInlineSentence()}
                   </View>
 
+                  {/* 유의어 입력 시 나타나는 안내 박스 */}
+                  {synonymMessage ? (
+                    <View style={styles.synonymAlertBox}>
+                      <Text style={styles.synonymAlertText}>👾 : {synonymMessage}</Text>
+                    </View>
+                  ) : null}
+
                   {isEvaluated && (
                     <View style={styles.flipGuideContainer}>
                       <Text style={styles.flipGuideText}>👆 카드를 터치하면 페르소나 원문 카드로 뒤집힙니다</Text>
@@ -158,16 +183,15 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, o
                   )}
                 </View>
               ) : (
-                /* [뒷면] 스와이프 기능이 제거된 고정형 SwipeCard (페르소나 카드) */
                 <View style={styles.flippedCardView}>
                   <SwipeCard 
                     item={currentItem} 
                     errorCount={currentItem.errorCount || 0} 
                     isNext={false} 
                     disableSwipe={true}
-                    isEvaluated={true}               // 테스트 결과 모드 활성화
-                    isCorrect={isCorrectResult}      // 맞았는지 틀렸는지에 따라 테두리 색상 변경
-                    feedbackText={feedbackText}      // '정답! 내일 복습' 또는 '오답! 잠시 후 복습' 뱃지 표시
+                    isEvaluated={true} 
+                    isCorrect={isCorrectResult} 
+                    feedbackText={feedbackText} 
                   />
                   <Text style={styles.flipGuideText}>👆 터치하면 다시 문제 화면으로 돌아갑니다</Text>
                 </View>
@@ -226,6 +250,9 @@ const styles = StyleSheet.create({
   incorrectBox: { backgroundColor: '#f8d7da', borderColor: '#dc3545' },
   correctText: { color: '#155724' },
   incorrectText: { color: '#721c24' },
+  // 유의어 피드백 안내 박스 스타일
+  synonymAlertBox: { backgroundColor: '#e8f8f5', borderWidth: 1.5, borderColor: '#2ecc71', padding: 12, borderRadius: 12, marginTop: 12 },
+  synonymAlertText: { color: '#27ae60', fontSize: 13, fontWeight: '700', lineHeight: 18 },
   flipGuideContainer: { marginTop: 16, alignItems: 'center', borderTopWidth: 1, borderTopColor: '#f1f2f6', paddingTop: 10 },
   flipGuideText: { fontSize: 12, color: '#0984e3', fontWeight: '600', textAlign: 'center', marginTop: 4 },
   bottomActionContainer: { marginTop: 24, marginBottom: 10 },
