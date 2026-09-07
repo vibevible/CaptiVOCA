@@ -1,6 +1,6 @@
 // src/utils/reviewAlgorithm.js
 
-// 1. 정답을 맞혔을 때: 복습 간격을 늘리고 'known(아는 단어)' 상태로 전환 + 에러 카운트 초기화
+// 1. 정답을 맞혔을 때: 복습 간격을 늘리고 'known(아는 단어)' 상태로 전환
 export function calculateCorrectReview(item) {
   const now = new Date();
   const currentInterval = item.interval || 0; // 분 단위
@@ -26,11 +26,10 @@ export function calculateCorrectReview(item) {
     interval: nextIntervalMinutes,
     lastReviewedAt: now.toISOString(),
     nextReviewText: nextReviewText,
-    errorCount: 0, // [추가] 정답을 맞히는 순간 오답 카운트 초기화 -> 카드 모드가 '기본 모드'로 돌아감
   };
 }
 
-// 2. 틀렸을 때: 헷갈리는 단어로 분류하고 '잠시 후 복습' (큐 맨 뒤로) + 에러 카운트 증가
+// 2. 틀렸을 때: 헷갈리는 단어로 분류하고 '잠시 후 복습' (큐 맨 뒤로)
 export function calculateIncorrectReview(item) {
   const now = new Date();
 
@@ -40,7 +39,7 @@ export function calculateIncorrectReview(item) {
     interval: 0, // 주기 초기화
     lastReviewedAt: now.toISOString(),
     nextReviewText: '잠시 후 복습',
-    errorCount: (item.errorCount || 0) + 1, // 틀릴 때마다 카운트 증가 (3회 -> 매혹, 10회 -> 호러)
+    errorCount: (item.errorCount || 0) + 1,
   };
 }
 
