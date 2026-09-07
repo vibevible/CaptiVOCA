@@ -1,0 +1,58 @@
+[
+  {
+    "id": "word_001",
+    "part": "파트 7",
+    "level": "700점",
+    "word": "reject",
+    "partOfSpeech": "v.",
+    "meaning": "거절하다, 거부하다",
+    "variants": {
+      "default": {
+        "sentence": "The committee decided to reject the proposal.",
+        "translation": "위원회는 그 제안을 거절하기로 결정했다.",
+        "highlightWord": "거절하기",
+        "imageUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500"
+      },
+      "seductive": {
+        "sentence": "You can try to reject me all you want, but you already know you can't live without my guidance.",
+        "translation": "네가 원하는 만큼 날 거절해 보려고 해도 돼, 하지만 내 지도 없이는 살 수 없다는 거 너도 이미 알잖아.",
+        "highlightWord": "거절해",
+        "imageUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500"
+      },
+      "horror": {
+        "sentence": "If you dare to reject my warning, your screen will shatter and I will crawl out.",
+        "translation": "감히 내 경고를 거절한다면, 네 화면이 박살 나고 내가 기어 나올 거야.",
+        "highlightWord": "거절한다면",
+        "imageUrl": "https://images.unsplash.com/photo-1509198397868-475647b2아래...-샘플"
+      }
+    }
+  },
+  {
+    "id": "word_002",
+    "part": "파트 7",
+    "level": "700점",
+    "word": "embrace",
+    "partOfSpeech": "v.",
+    "meaning": "포용하다, 환영하다",
+    "variants": {
+      "default": {
+        "sentence": "She decided to embrace the new opportunity.",
+        "translation": "그녀는 새로운 기회를 포용하기로 결심했다.",
+        "highlightWord": "포용하기",
+        "imageUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=500"
+      },
+      "seductive": {
+        "sentence": "You can try to reject me all you want, but you already know you can't live without my guidance.",
+        "translation": "네가 원하는 만큼 날 거절해 보려고 해도 돼, 하지만 내 지도 없이는 살 수 없다는 거 너도 이미 알잖아.",
+        "highlightWord": "거절해",
+        "imageUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500"
+      },
+      "horror": {
+        "sentence": "If you dare to reject my warning, your screen will shatter and I will crawl out.",
+        "translation": "감히 내 경고를 거절한다면, 네 화면이 박살 나고 내가 기어 나올 거야.",
+        "highlightWord": "거절한다면",
+        "imageUrl": "https://images.unsplash.com/photo-1509198397868-475647b2아래...-샘플"
+      }
+    }
+  }
+]
