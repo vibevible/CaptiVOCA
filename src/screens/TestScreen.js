@@ -10,9 +10,10 @@ export default function TestScreen({ navigation }) {
   const [quizQueue, setQuizQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // [추가] 고정된 초기 고유 단어 총 개수 저장
   const [initialTotalLength, setInitialTotalLength] = useState(0);
+  
+  // [추가] 정답을 맞춰서 완전히 끝낸 고유 단어의 ID들을 담는 Set 상태
+  const [completedIds, setCompletedIds] = useState(new Set());
 
   useEffect(() => {
     async function initQuiz() {
@@ -22,7 +23,8 @@ export default function TestScreen({ navigation }) {
         const finalQuizList = reviewList.length > 0 ? reviewList : loadedData;
 
         setQuizQueue(finalQuizList);
-        setInitialTotalLength(finalQuizList.length); // 최초 고유 단어 개수 고정
+        const initialUniqueCount = new Set(finalQuizList.map(q => q.id)).size;
+        setInitialTotalLength(initialUniqueCount);
       } catch (e) {
         console.error('퀴즈 데이터를 불러오는 중 에러 발생:', e);
       } finally {
@@ -40,6 +42,8 @@ export default function TestScreen({ navigation }) {
       ...updatedData,
       errorCount: 0, 
     };
+    
+    setCompletedIds(prev => new Set(prev).add(item.id));
     
     const newQueue = quizQueue
       .map(q => q.id === updatedItem.id ? updatedItem : q)
@@ -81,9 +85,8 @@ export default function TestScreen({ navigation }) {
     );
   }
 
-  // [핵심 계산] 현재 큐에 남아있는 '고유 단어'의 개수를 세어 완료된 단어 수 계산
-  const uniqueRemainingCount = new Set(quizQueue.map(q => q.id)).size;
-  const completedCount = Math.max(0, initialTotalLength - uniqueRemainingCount);
+  // [수정] 완료된 고유 단어들의 개수를 바로 산출
+  const completedCount = completedIds.size;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -91,8 +94,8 @@ export default function TestScreen({ navigation }) {
         <TestQuizView 
           currentItem={currentItem} 
           currentIndex={currentIndex}
-          fixedTotalLength={initialTotalLength} // 고정된 총 단어 수
-          completedCount={completedCount}        // 완료된 고유 단어 수
+          fixedTotalLength={initialTotalLength} 
+          completedCount={completedCount}        
           onCorrect={handleCorrect} 
           onIncorrect={handleIncorrect}
           onClose={() => navigation.goBack()}

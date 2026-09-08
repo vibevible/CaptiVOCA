@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingVi
 import SwipeCard from './SwipeCard';
 import { getFormattedPreviousTime } from '../utils/reviewAlgorithm';
 
-export default function TestQuizView({ currentItem, currentIndex, totalLength, onCorrect, onIncorrect, onClose }) {
+export default function TestQuizView({ currentItem, currentIndex, totalLength, fixedTotalLength, completedCount,  onCorrect, onIncorrect, onClose }) {
   const [userInput, setUserInput] = useState('');
   const [isEvaluated, setIsEvaluated] = useState(false);
   const [isCorrectResult, setIsCorrectResult] = useState(false);
