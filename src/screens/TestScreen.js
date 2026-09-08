@@ -9,22 +9,20 @@ import { saveVocabularyState, loadVocabularyState } from '../utils/storage';
 export default function TestScreen({ navigation }) {
   const [quizQueue, setQuizQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // [추가] 고정된 초기 고유 단어 총 개수 저장
+  const [initialTotalLength, setInitialTotalLength] = useState(0);
 
-  // 화면 진입 시 저장소에서 단어 상태를 불러오고 복습 대상만 필터링
   useEffect(() => {
     async function initQuiz() {
       try {
         const loadedData = await loadVocabularyState(initialVocabulary);
-        
-        // [중요] 복습이 필요한 단어들만 골라냅니다 (errorCount가 있거나 학습이 필요한 단어 등)
-        // 만약 전체 단어로 테스트를 시작하고 싶다면 이 필터 조건을 조정하세요.
         const reviewList = loadedData.filter(item => (item.errorCount || 0) > 0 || item.status === 'learning');
-        
-        // 만약 복습 대상이 하나도 없다면 전체 단어로 테스트를 시작하게 안전장치 추가
         const finalQuizList = reviewList.length > 0 ? reviewList : loadedData;
 
         setQuizQueue(finalQuizList);
+        setInitialTotalLength(finalQuizList.length); // 최초 고유 단어 개수 고정
       } catch (e) {
         console.error('퀴즈 데이터를 불러오는 중 에러 발생:', e);
       } finally {
@@ -37,7 +35,6 @@ export default function TestScreen({ navigation }) {
   const currentItem = quizQueue[currentIndex];
 
   const handleCorrect = async (item) => {
-    // 정답 처리 및 복습 주기 적용 + 에러 카운트 0으로 초기화
     const updatedData = calculateCorrectReview ? calculateCorrectReview(item) : { ...item, errorCount: 0 };
     const updatedItem = {
       ...updatedData,
@@ -76,7 +73,6 @@ export default function TestScreen({ navigation }) {
     setCurrentIndex(currentIndex + 1);
   };
 
-  // 로딩 중일 때 빈 화면 대신 로딩 인디케이터 표시
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, styles.center]}>
@@ -85,8 +81,9 @@ export default function TestScreen({ navigation }) {
     );
   }
 
-  console.log('현재 큐 길이:', quizQueue.length);
-  console.log('현재 퀴즈 인덱스:', currentIndex);
+  // [핵심 계산] 현재 큐에 남아있는 '고유 단어'의 개수를 세어 완료된 단어 수 계산
+  const uniqueRemainingCount = new Set(quizQueue.map(q => q.id)).size;
+  const completedCount = Math.max(0, initialTotalLength - uniqueRemainingCount);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,19 +91,13 @@ export default function TestScreen({ navigation }) {
         <TestQuizView 
           currentItem={currentItem} 
           currentIndex={currentIndex}
-          totalLength={quizQueue.length}
+          fixedTotalLength={initialTotalLength} // 고정된 총 단어 수
+          completedCount={completedCount}        // 완료된 고유 단어 수
           onCorrect={handleCorrect} 
           onIncorrect={handleIncorrect}
           onClose={() => navigation.goBack()}
         />
-      ) : (
-        <View style={[styles.container, styles.center]}>
-          {/* 큐가 비어있을 때의 예외 처리 화면 */}
-          <View style={{ alignItems: 'center' }}>
-            {/* 텍스트나 완료 버튼 배치 가능 */}
-          </View>
-        </View>
-      )}
+      ) : null}
     </SafeAreaView>
   );
 }

@@ -20,8 +20,11 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, o
   const currentVariant = currentItem.variants.default;
   const synonyms = currentItem.synonyms || []; // 단어장에 정의된 유의어 배열 (없으면 빈 배열)
   const antonyms = currentItem.antonyms || []; // 단어장에 정의된 반의어 배열 (없으면 빈 배열)
-  const progressPercent = Math.min(((currentIndex + 1) / totalLength) * 100, 100);
-  const progressText = `${String(currentIndex + 1).padStart(2, '0')}/${String(totalLength).padStart(2, '0')}`;
+  const progressPercent = fixedTotalLength > 0 
+    ? Math.min((completedCount / fixedTotalLength) * 100, 100) 
+    : 0;
+  
+  const progressText = `${String(completedCount).padStart(2, '0')}/${String(fixedTotalLength).padStart(2, '0')}`;
 
   const defaultBadgeText = currentItem.lastReviewedAt 
     ? `${currentItem.level || '700점'} · ${getFormattedPreviousTime(currentItem.lastReviewedAt)}`
