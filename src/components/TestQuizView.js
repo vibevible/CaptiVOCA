@@ -102,6 +102,7 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, f
     console.log('사용자 입력:', cleanInput);
     console.log('정답 단어:', targetWord.toLowerCase());
     console.log('등록된 유의어 목록:', synonyms);
+    console.log('등록된 반의어 목록:', antonyms);
 
     // 정답 체크
     if (cleanInput === targetWord.toLowerCase()) {
@@ -127,7 +128,7 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, f
     console.log('반의어 매칭 여부:', isAntonymMatch);
 
     if (isAntonymMatch) {
-      setAntonymMessage(`'${userInput.trim()}'는 '${targetWord}'의 반대되는 뜻이에요. 다른 단어를 생각해 보세요.`);
+      setAntonymMessage(`'${userInput.trim()}'는 우리가 찾는 단어와 반대되는 뜻이에요. 다른 단어를 생각해 보세요.`);
       return;
     }
 

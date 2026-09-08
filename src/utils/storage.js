@@ -15,7 +15,7 @@ export async function loadVocabularyState(defaultList) {
   try {
     // [임시 강제 초기화 코드] 
     // 개발 중 데이터가 꼬였을 때 아래 주석을 풀고 앱을 한 번 켰다가 다시 주석 처리하면 싹 초기화됩니다!
-    // await AsyncStorage.removeItem(VOCAB_STORAGE_KEY);
+    await AsyncStorage.removeItem(VOCAB_STORAGE_KEY);
 
     const jsonValue = await AsyncStorage.getItem(VOCAB_STORAGE_KEY);
     if (jsonValue != null) {
