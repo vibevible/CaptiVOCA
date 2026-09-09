@@ -6,21 +6,39 @@ import initialVocabulary from '../../data/vocabulary.json';
 import { calculateCorrectReview, calculateIncorrectReview } from '../utils/reviewAlgorithm';
 import { saveVocabularyState, loadVocabularyState } from '../utils/storage';
 
-export default function TestScreen({ navigation }) {
+export default function TestScreen({ route, navigation }) {
+  const params = route?.params || {};
+  const includeKnown = params.includeKnown ?? false;
+  const batchSize = params.batchSize ?? 10;
+
   const [quizQueue, setQuizQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [initialTotalLength, setInitialTotalLength] = useState(0);
-  
-  // [추가] 정답을 맞춰서 완전히 끝낸 고유 단어의 ID들을 담는 Set 상태
   const [completedIds, setCompletedIds] = useState(new Set());
 
   useEffect(() => {
     async function initQuiz() {
       try {
         const loadedData = await loadVocabularyState(initialVocabulary);
-        const reviewList = loadedData.filter(item => (item.errorCount || 0) > 0 || item.status === 'learning');
-        const finalQuizList = reviewList.length > 0 ? reviewList : loadedData;
+        
+        // 디버깅용 로그 (F12 콘솔이나 터미널에서 각 단어의 status 확인)
+        console.log('--- 스토리지에서 불러온 단어 상태들 ---', loadedData.map(d => ({ word: d.word, status: d.status })));
+
+        let targetList = loadedData;
+        
+        // includeKnown이 false일 때 ('아는 단어 포함'을 끈 경우)
+        if (!includeKnown) {
+          // 'known'이 아닌 것만 필터링 (status가 없거나 'learning'인 것들)
+          targetList = loadedData.filter(item => item.status !== 'known');
+        }
+
+        // 필터링 결과가 아예 없거나 비어버렸을 때의 안전장치
+        if (targetList.length === 0) {
+          targetList = loadedData; 
+        }
+
+        const finalQuizList = targetList.slice(0, batchSize);
 
         setQuizQueue(finalQuizList);
         const initialUniqueCount = new Set(finalQuizList.map(q => q.id)).size;
@@ -32,7 +50,7 @@ export default function TestScreen({ navigation }) {
       }
     }
     initQuiz();
-  }, []);
+  }, [includeKnown, batchSize]);
 
   const currentItem = quizQueue[currentIndex];
 
