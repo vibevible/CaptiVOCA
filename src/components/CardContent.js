@@ -25,7 +25,7 @@ function getModeStyle(state) {
 }
 
 export default function CardContent({ item, personaState, currentContent }) {
-  const modeInfo = getModeStyle(personaState);
+  const modeInfo = getModeStyle(personaState)
 
   return (
     <View style={styles.container}>
@@ -138,10 +138,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#dfe6e9',
   },
   badgeSeductive: {
-    backgroundColor: '#e74c3c', // 매혹 모드 배지 배경 (빨강)
+    backgroundColor: '#e681a1', // 매혹 모드 배지 배경 (빨강)
   },
   badgeHorror: {
-    backgroundColor: '#8e44ad', // 공포 모드 배지 배경 (보라)
+    backgroundColor: '#c56bf1', // 공포 모드 배지 배경 (보라)
   },
   modeBadgeText: {
     fontSize: 11,

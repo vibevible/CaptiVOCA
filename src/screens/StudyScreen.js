@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SwipeCard from '../components/SwipeCard';
 import vocabularyData from '../../data/vocabulary.json';
@@ -7,7 +7,10 @@ import vocabularyData from '../../data/vocabulary.json';
 export default function StudyScreen({ navigation }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [knownCount, setKnownCount] = useState(0); 
-  const [studyCount, setStudyCount] = useState(0); 
+  const [studyCount, setStudyCount] = useState(0);
+  
+  // [추가] 스키밍 완료 여부를 관리하는 상태
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const handleNextCard = (isKnown) => {
     if (isKnown) {
@@ -19,14 +22,65 @@ export default function StudyScreen({ navigation }) {
     if (currentIndex < vocabularyData.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      alert('모든 단어 스키밍을 완료했습니다!');
-      navigation.goBack();
+      // [수정] alert 대신 완료 상태를 true로 전환
+      setIsCompleted(true);
     }
   };
 
   const totalCount = vocabularyData.length;
   const currentItem = vocabularyData[currentIndex];
   const nextItem = currentIndex + 1 < totalCount ? vocabularyData[currentIndex + 1] : null;
+
+  // 스키밍 완료 시 보여줄 화면
+  if (isCompleted) {
+    return (
+      <SafeAreaView style={styles.container}>
+        {/* 상단바는 그대로 유지 */}
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.backIcon}>〈</Text>
+          </TouchableOpacity>
+          <View style={styles.counterBadgeGroup}>
+            <View style={styles.counterBadge}>
+              <Text>🗑️ {knownCount}</Text>
+            </View>
+            <View style={[styles.counterBadge, styles.greenBadge]}>
+              <Text style={styles.whiteText}>✅ {studyCount} / {totalCount}</Text>
+            </View>
+          </View>
+          <Text style={styles.menuIcon}>⋮</Text>
+        </View>
+
+        {/* 중앙 완료 안내 카드 */}
+        <View style={styles.cardArea}>
+          <View style={styles.completionCardOnly}>
+            <Text style={styles.completionEmoji}>🎉</Text>
+            <Text style={styles.completionTitle}>스키밍 완료!</Text>
+            <Text style={styles.completionSubtitle}>
+              알고 있어요: {knownCount}개 / 학습할 단어: {studyCount}개
+            </Text>
+          </View>
+        </View>
+
+        {/* 평소 카드 아래에 있던 액션 버튼 스타일을 그대로 적용한 하단 바 */}
+        <View style={styles.bottomActionRow}>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.actionBtnText}>메인으로 나가기</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.darkActionButton]} 
+            onPress={() => navigation.replace('Test')}
+          >
+            <Text style={[styles.actionBtnText, styles.whiteText]}>복습 테스트 시작</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,9 +101,8 @@ export default function StudyScreen({ navigation }) {
         <Text style={styles.menuIcon}>⋮</Text>
       </View>
 
-      {/* 카드 스택 영역 (완전히 포개진 구조) */}
+      {/* 카드 스택 영역 */}
       <View style={styles.cardArea}>
-        {/* 1. 아래에 완전히 가려져 있는 다음 카드 (zIndex: 1) */}
         {nextItem && (
           <View style={[styles.cardWrapper, { zIndex: 1 }]}>
             <SwipeCard 
@@ -59,7 +112,6 @@ export default function StudyScreen({ navigation }) {
           </View>
         )}
 
-        {/* 2. 맨 위에 완전히 덮고 있는 현재 카드 (zIndex: 2) */}
         {currentItem ? (
           <View style={[styles.cardWrapper, { zIndex: 2 }]}>
             <SwipeCard 
@@ -71,9 +123,7 @@ export default function StudyScreen({ navigation }) {
               errorCount={currentItem.errorCount || 0}
             />
           </View>
-        ) : (
-          <Text>학습 완료!</Text>
-        )}
+        ) : null}
       </View>
 
       <View style={styles.bottomActionRow}>
@@ -97,6 +147,21 @@ export default function StudyScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f4f5f7' },
+  completedContainer: { justifyContent: 'center', alignItems: 'center', padding: 20 },
+  completionCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    elevation: 4,
+  },
+  completionEmoji: { fontSize: 48, marginBottom: 12 },
+  completionTitle: { fontSize: 24, fontWeight: 'bold', color: '#111', marginBottom: 8 },
+  completionSubtitle: { fontSize: 15, color: '#666', marginBottom: 32, textAlign: 'center' },
+  completionBtnGroup: { width: '100%', gap: 12 },
   topBar: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
@@ -134,7 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4f5f7',
   },
   actionButton: { 
-    flex: 1, 
+    flex: 1,
     backgroundColor: '#fff', 
     paddingVertical: 16, 
     borderRadius: 16, 

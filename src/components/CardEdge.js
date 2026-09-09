@@ -97,7 +97,7 @@ export default function CardEdge({
               <View style={styles.overlayContent}>
                 <Text style={styles.overlayIcon}>✅</Text>
                 <Text style={styles.overlayTitle}>학습할 단어</Text>
-                <Text style={styles.overlaySub}>플래시카드에서 만나요.</Text>
+                <Text style={styles.overlaySub}>퀴즈에서 만나요.</Text>
               </View>
             </Animated.View>
           </>

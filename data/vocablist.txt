@@ -1,0 +1,83 @@
+Day 1:
+"word": "resume",
+"word": "opening",
+"word": "applicant",
+"word": "requirement",
+"word": "meet",
+"word": "qualified",
+"word": "candidate",
+"word": "confidence",
+"word": "highly",
+"word": "professional",
+"word": "interview",
+"word": "hire",
+"word": "training",
+"word": "reference",
+"word": "position",
+"word": "achievement",
+"word": "impressed",
+"word": "excellent",
+"word": "eligible",
+"word": "identify",
+"word": "associate",
+"word": "condition",
+"word": "employment",
+"word": "lack",
+"word": "managerial",
+"word": "diligent",
+"word": "familiar",
+"word": "proficiency",
+"word": "prospective",
+"word": "appeal",
+"word": "specialize",
+"word": "apprehensive",
+"word": "consultant",
+"word": "entitle",
+"word": "degree",
+"word": "payroll",
+"word": "recruit",
+"word": "certification",
+"word": "occupation",
+"word": "wage",
+
+Day 2:
+attire
+code
+concern
+policy
+comply
+regulation
+exception
+adhere
+serverely
+refrain
+permission
+access
+thoroughly
+revise
+approach
+approval
+form
+immediatly
+inspection
+arrangement
+procedure
+negative
+mandate
+effect
+drastically
+according to
+enable
+standard
+constant
+act
+compensation
+ban
+obligation
+authorize
+prohibit
+abolish
+enforce
+habit
+legislation
+restrict
