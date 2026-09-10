@@ -10,6 +10,7 @@ export default function StudyScreen({ navigation }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [knownCount, setKnownCount] = useState(0); 
   const [studyCount, setStudyCount] = useState(0);
+  const [testCount, setTestCount] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,6 +18,14 @@ export default function StudyScreen({ navigation }) {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [includeKnown, setIncludeKnown] = useState(false);
   const [batchSize, setBatchSize] = useState(10);
+
+  // 1. 현재 설정(아는 단어 포함 여부)에 따른 전체 테스트 가능 최대 단어 수 계산
+  const maxAvailableCount = includeKnown 
+    ? vocabularyData.length           // 아는 단어 포함이면 전체 단어 수
+    : studyCount;                     // 미포함이면 학습할 단어 수만
+  
+  // 2. batchSize가 최대 개수를 넘지 않도록 안전장치 반영
+  const effectiveBatchSize = Math.min(batchSize, Math.max(10, maxAvailableCount));
 
   // 컴포넌트 마운트 시 저장소에서 데이터 불러오기
   useEffect(() => {
@@ -56,9 +65,6 @@ export default function StudyScreen({ navigation }) {
     const updatedData = vocabularyData.map(item => 
       item.id === updatedItem.id ? updatedItem : item
     );
-
-    // [디버깅 로그] 업데이트 후 데이터에 known이 잘 들어갔는지 확인
-    console.log(`[업데이트된 항목 확인]`, updatedItem)
 
     setVocabularyData(updatedData);
     await saveVocabularyState(updatedData); // 즉시 스토리지에 저장!
@@ -117,36 +123,38 @@ export default function StudyScreen({ navigation }) {
             </View>
           ) : (
             <View style={styles.configBox}>
-              <Text style={styles.configTitle}>⚙️ 퀴즈 즉석 설정</Text>
+              <Text style={styles.configTitle}>퀴즈 설정</Text>
               
               <View style={styles.configRow}>
-                <Text style={styles.configLabel}>아는 단어(스키밍 완료)도 퀴즈에 포함</Text>
+                <Text style={styles.configLabel}>[🔥] 아는 단어(스키밍 완료)도 퀴즈에 포함</Text>
                 <Switch 
                   value={includeKnown} 
                   onValueChange={setIncludeKnown}
-                  trackColor={{ false: '#cbd5e1', true: '#111' }}
+                  trackColor={{ false: '#cbd5e1', true: '#888' }}
                 />
               </View>
 
               <View style={styles.configColumn}>
-                <Text style={styles.configLabel}>한 번에 풀 퀴즈 개수: <Text style={styles.boldText}>{batchSize}개</Text></Text>
+                <Text style={styles.configLabel}>
+                  한 번에 풀 퀴즈 개수: <Text style={styles.boldText}>{effectiveBatchSize}개 / {maxAvailableCount}개</Text>
+                </Text>
                 <View style={styles.stepperRow}>
                   <TouchableOpacity 
                     style={styles.stepBtn}
-                    // 최소 10개, 혹은 남은 단어 수 중 작은 값으로 제한
                     onPress={() => setBatchSize(prev => Math.max(10, prev - 10))}
                   >
-                    <Text style={styles.stepBtnText}>- 10</Text>
+                    <Text style={styles.stepBtnText}>-</Text>
                   </TouchableOpacity>
 
-                  <Text style={styles.stepValue}>{Math.min(batchSize, studyCount)}개</Text>
+                  {/* 현재 동적으로 계산된 effectiveBatchSize를 표기 */}
+                  <Text style={styles.stepValue}>{effectiveBatchSize}</Text>
 
                   <TouchableOpacity 
                     style={styles.stepBtn}
-                    // 최대 학습할 단어 수(studyCount)를 넘지 않도록 제한
-                    onPress={() => setBatchSize(prev => Math.min(studyCount, prev + 10))}
+                    // '아는 단어 포함'이면 전체 단어 수까지, 아니면 studyCount까지만 증가 허용
+                    onPress={() => setBatchSize(prev => Math.min(maxAvailableCount, prev + 10))}
                   >
-                    <Text style={styles.stepBtnText}>+ 10</Text>
+                    <Text style={styles.stepBtnText}>+</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -186,7 +194,7 @@ export default function StudyScreen({ navigation }) {
                   navigation.replace("Test", { includeKnown, batchSize });
                 }}
               >
-                <Text style={[styles.actionBtnText, styles.whiteText, styles.emphasizedText]}>🚀 시작하기</Text>
+                <Text style={[styles.actionBtnText, styles.whiteText, styles.emphasizedText]}>시작하기</Text>
               </TouchableOpacity>
             </>
           )}
@@ -284,6 +292,6 @@ const styles = StyleSheet.create({
   darkActionButton: { backgroundColor: '#111', borderColor: '#111' },
   actionBtnText: { fontSize: 16, fontWeight: 'bold', color: '#111' },
   
-  emphasizedBtn: { backgroundColor: '#2563eb', borderColor: '#2563eb' },
+  emphasizedBtn: { backgroundColor: '#FF2D6F', borderColor: '#FF2D6F' },
   emphasizedText: { color: '#fff' }
 });
