@@ -15,7 +15,6 @@ export default function HomeScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState('토익');
   const [activeTab, setActiveTab] = useState('홈');
 
-  // 현재 날짜(2026년 9월 7일)를 기준으로 Day 1 시작 설정 -> 가입일과 스트릭에 따라 동적 적용
   const baseStartDate = new Date(2026, 8, 7); 
   const [selectedDate, setSelectedDate] = useState(new Date(2026, 8, 7));
 

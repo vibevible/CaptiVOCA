@@ -143,3 +143,23 @@ Expo + Supabase 조합으로 이미지 기반 단어 앱을 효율적으로 관�
 * **Expo 앱 내 처리:** 사용자가 단어를 스키밍할 때 기본/매혹/공포 모드를 전환하거나 동시에 보여줄 때도 앞서 언급한 `expo-image`를 쓰면 이미지가 캐시되어 로딩 지연 없이 부드럽게 전환될 겁니다.
 
 캐릭터 페르소나의 구체적인 비주얼 컨셉(예: 귀여운 동물 캐릭터, 시니컬한 애니메이션 인간 캐릭터 등)이나 이미지 생성을 어떤 AI 모델(DALL-E 등)로 붙일지 구상해 두신 방향이 있으신가요?
+
+CaptiVoca
+ㄴdata
+ ㄴvocabulary.json
+ㄴsrc
+ ㄴcomponents
+  ㄴCardContent.js
+  ㄴCardEdge.js
+  ㄴPersonacardBadge.js
+  ㄴSwipeCard.js
+  ㄴTestQuizView.js
+ ㄴscreens
+  ㄴHomeScreen.js
+  ㄴStudyScreen.js
+  ㄴTestScreen.js
+ㄴutils
+ ㄴreviewAlgorithm.js
+ ㄴstorage.js
+App.js
+index.js

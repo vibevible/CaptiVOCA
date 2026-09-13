@@ -9,11 +9,9 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, f
   const [isCorrectResult, setIsCorrectResult] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   
-  // [추가] 유의어 입력 시 띄울 피드백 메시지 상태
   const [synonymMessage, setSynonymMessage] = useState('');
-  const [antonymMessage, setAntonymMessage] = useState(''); // [추가] 반의어 피드백 메시지 상태
+  const [antonymMessage, setAntonymMessage] = useState('');
 
-  // 앞면(문제 풀이 폼)과 뒷면(페르소나 카드) 전환을 위한 플립 상태
   const [isFlipped, setIsFlipped] = useState(false);
 
   const targetWord = currentItem.word;
@@ -204,11 +202,11 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, f
                     </View>
                   ) : null}
 
-                  {isEvaluated && (
+                  {/* {isEvaluated && (
                     <View style={styles.flipGuideContainer}>
                       <Text style={styles.flipGuideText}>👆 카드를 터치하면 페르소나 원문 카드로 뒤집힙니다</Text>
                     </View>
-                  )}
+                  )} */}
                 </View>
               ) : (
                 <View style={styles.flippedCardView}>
@@ -221,7 +219,7 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, f
                     isCorrect={isCorrectResult} 
                     feedbackText={feedbackText} 
                   />
-                  <Text style={styles.flipGuideText}>👆 터치하면 다시 문제 화면으로 돌아갑니다</Text>
+                  {/* <Text style={styles.flipGuideText}>👆 터치하면 다시 문제 화면으로 돌아갑니다</Text> */}
                 </View>
               )}
             </View>
@@ -239,8 +237,14 @@ export default function TestQuizView({ currentItem, currentIndex, totalLength, f
               <Text style={styles.fullWidthBtnText}>확인</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.fullWidthBtn} onPress={handleNextStep}>
-              <Text style={styles.fullWidthBtnText}>다음 문제로</Text>
+            <TouchableOpacity 
+              style={[styles.fullWidthBtn, !isFlipped && styles.disabledBtn]} 
+              onPress={handleNextStep}
+              disabled={!isFlipped}
+            >
+              <Text style={styles.fullWidthBtnText}>
+                {isFlipped ? '다음 문제로' : '👆 카드를 뒤집어 확인하세요'}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
