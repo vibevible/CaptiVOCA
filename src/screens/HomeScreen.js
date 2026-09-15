@@ -83,11 +83,11 @@ export default function HomeScreen({ navigation }) {
 
         {/* 1. 스키밍 카드 (StudyScreen으로 이동) */}
         <View style={styles.missionCard}>
-          <View style={styles.stackedCardsPreview}>
+          {/* <View style={styles.stackedCardsPreview}>
             <View style={[styles.miniCardMock, { transform: [{ rotate: '-6deg' }], left: 20 }]} />
             <View style={[styles.miniCardMock, { transform: [{ rotate: '-3deg' }], left: 45 }]} />
             <View style={[styles.miniCardMock, { transform: [{ rotate: '0deg' }], left: 70, zIndex: 3 }]} />
-          </View>
+          </View> */}
           
           <View style={styles.cardHeaderRow}>
             <Text style={styles.cardSectionTitle}>스키밍</Text>
@@ -100,10 +100,10 @@ export default function HomeScreen({ navigation }) {
 
           <View style={styles.cardInfoRow}>
             <Text style={styles.cardSubText}>시작 전</Text>
-            <Text style={styles.cardSubText}>~11분</Text>
+            <Text style={styles.cardSubText}>10개</Text>
           </View>
 
-          <Text style={styles.cardActionDesc}>모르는 단어 32개를 골라주세요.</Text>
+          <Text style={styles.cardActionDesc}>모르는 단어를 골라볼게요.</Text>
 
           <TouchableOpacity 
             style={styles.startButton}
@@ -117,6 +117,7 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.missionCard}>
           <View style={styles.cardHeaderRow}>
             <Text style={styles.cardSectionTitle}>복습 (퀴즈)</Text>
+            <Text style={styles.cardSettingsIcon}>⚙️</Text>
           </View>
 
           <View style={styles.progressBarBg}>
@@ -125,7 +126,7 @@ export default function HomeScreen({ navigation }) {
 
           <View style={styles.cardInfoRow}>
             <Text style={styles.cardSubText}>시작 전</Text>
-            <Text style={styles.cardSubText}>~5분</Text>
+            <Text style={styles.cardSubText}>10개</Text>
           </View>
 
           <Text style={styles.cardActionDesc}>인출형 빈칸 테스트로 실력을 확인하세요.</Text>
@@ -137,10 +138,6 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.startButtonText}>바로 시작</Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.promoBanner}>
-          <Text style={styles.promoBannerText}>🔥 CaptiVoca 하나로 끝내세요! </Text>
-        </TouchableOpacity>
 
       </ScrollView>
 
