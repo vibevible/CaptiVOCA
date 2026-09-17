@@ -4,13 +4,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import TestQuizView from '../components/TestQuizView';
 import initialVocabulary from '../../data/vocabulary.json';
 import { calculateCorrectReview, calculateIncorrectReview } from '../utils/reviewAlgorithm';
-import { saveVocabularyState, loadVocabularyState } from '../utils/storage';
+import { saveVocabularyState, loadVocabularyState, saveLearningStep, saveTestTotalCount } from '../utils/storage';
 
-export default function TestScreen({ route, navigation }) {
-  const params = route?.params || {};
-  const includeKnown = params.includeKnown ?? false;
-  const batchSize = params.batchSize ?? 10;
-
+export default function TestScreen({ navigation }) {
   const [quizQueue, setQuizQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,35 +18,23 @@ export default function TestScreen({ route, navigation }) {
       try {
         const loadedData = await loadVocabularyState(initialVocabulary);
         
-        // 디버깅용 로그 (F12 콘솔이나 터미널에서 각 단어의 status 확인)
-        console.log('--- 스토리지에서 불러온 단어 상태들 ---', loadedData.map(d => ({ word: d.word, status: d.status })));
-
-        let targetList = loadedData;
-        
-        // includeKnown이 false일 때 ('아는 단어 포함'을 끈 경우)
-        if (!includeKnown) {
-          // 'known'이 아닌 것만 필터링 (status가 없거나 'learning'인 것들)
-          targetList = loadedData.filter(item => item.status !== 'known');
-        }
-
-        // 필터링 결과가 아예 없거나 비어버렸을 때의 안전장치
+        // 스키밍 때 'known'이 아닌 단어들을 테스트 대상(targetList)으로 설정
+        let targetList = loadedData.filter(item => item.status !== 'known');
         if (targetList.length === 0) {
-          targetList = loadedData; 
+          targetList = loadedData; // 안전장치
         }
 
-        const finalQuizList = targetList.slice(0, batchSize);
+        setQuizQueue(targetList);
+        setInitialTotalLength(targetList.length);
 
-        setQuizQueue(finalQuizList);
-        const initialUniqueCount = new Set(finalQuizList.map(q => q.id)).size;
-        setInitialTotalLength(initialUniqueCount);
       } catch (e) {
-        console.error('퀴즈 데이터를 불러오는 중 에러 발생:', e);
+        console.error('테스트 데이터를 불러오는 중 에러 발생:', e);
       } finally {
         setIsLoading(false);
       }
     }
     initQuiz();
-  }, [includeKnown, batchSize]);
+  }, []);
 
   const currentItem = quizQueue[currentIndex];
 
@@ -58,10 +42,12 @@ export default function TestScreen({ route, navigation }) {
     const updatedData = calculateCorrectReview ? calculateCorrectReview(item) : { ...item, errorCount: 0 };
     const updatedItem = {
       ...updatedData,
+      status: 'known', // 테스트를 맞추면 확실한 아는 단어로 마스터 처리
       errorCount: 0, 
     };
     
-    setCompletedIds(prev => new Set(prev).add(item.id));
+    const newCompletedIds = new Set(completedIds).add(item.id);
+    setCompletedIds(newCompletedIds);
     
     const newQueue = quizQueue
       .map(q => q.id === updatedItem.id ? updatedItem : q)
@@ -73,12 +59,16 @@ export default function TestScreen({ route, navigation }) {
       });
 
     setQuizQueue(newQueue);
+    
     await saveVocabularyState(newQueue);
 
+    // 💡 실시간으로 진행률 비율을 계산해서 저장하거나 홈 화면에서 쓸 수 있게 함
+    // 여기서는 큐가 다 끝나면 'completed'로 전환
     if (currentIndex < newQueue.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      alert('모든 복습 테스트를 완료했습니다! 🎉');
+      await saveLearningStep('completed');
+      alert('모든 테스트를 완료했습니다! 🎉');
       navigation.goBack();
     }
   };
@@ -87,7 +77,7 @@ export default function TestScreen({ route, navigation }) {
     const updatedItem = calculateIncorrectReview(item);
     
     const newQueue = quizQueue.map(q => q.id === updatedItem.id ? updatedItem : q);
-    const finalQueue = [...newQueue, updatedItem];
+    const finalQueue = [...newQueue, updatedItem]; // 틀린 건 뒤로 다시 배치
     
     setQuizQueue(finalQueue);
     await saveVocabularyState(finalQueue);
@@ -103,7 +93,6 @@ export default function TestScreen({ route, navigation }) {
     );
   }
 
-  // [수정] 완료된 고유 단어들의 개수를 바로 산출
   const completedCount = completedIds.size;
 
   return (
@@ -116,7 +105,10 @@ export default function TestScreen({ route, navigation }) {
           completedCount={completedCount}        
           onCorrect={handleCorrect} 
           onIncorrect={handleIncorrect}
-          onClose={() => navigation.goBack()}
+          onClose={async () => {
+            // 테스트 도중 나가더라도 현재까지의 상태를 반영해 저장
+            navigation.goBack();
+          }}
         />
       ) : null}
     </SafeAreaView>

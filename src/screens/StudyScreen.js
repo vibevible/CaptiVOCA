@@ -4,15 +4,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import SwipeCard from '../components/SwipeCard';
 import initialVocabulary from '../../data/vocabulary.json';
 import { saveVocabularyState, loadVocabularyState } from '../utils/storage';
+import { saveLearningStep, saveTestTotalCount } from '../utils/storage';
 
 export default function StudyScreen({ navigation }) {
   const [vocabularyData, setVocabularyData] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const [knownCount, setKnownCount] = useState(0); 
   const [studyCount, setStudyCount] = useState(0);
   const [testCount, setTestCount] = useState(0);
+
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTutorial, setIsTutorial] = useState(false);
 
   // 퀴즈 즉석 설정 상태
   const [showConfigModal, setShowConfigModal] = useState(false);
@@ -113,91 +117,48 @@ export default function StudyScreen({ navigation }) {
         </View>
 
         <View style={styles.cardArea}>
-          {!showConfigModal ? (
-            <View style={styles.completionCardOnly}>
-              <Text style={styles.completionEmoji}>🎉</Text>
-              <Text style={styles.completionTitle}>스키밍 완료!</Text>
-              <Text style={styles.completionSubtitle}>
-                알고 있어요: {knownCount}개 / 학습할 단어: {studyCount}개
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.configBox}>
-              <Text style={styles.configTitle}>퀴즈 설정</Text>
-              
-              <View style={styles.configRow}>
-                <Text style={styles.configLabel}>[🔥] 아는 단어(스키밍 완료)도 퀴즈에 포함</Text>
-                <Switch 
-                  value={includeKnown} 
-                  onValueChange={setIncludeKnown}
-                  trackColor={{ false: '#cbd5e1', true: '#888' }}
-                />
-              </View>
-
-              <View style={styles.configColumn}>
-                <Text style={styles.configLabel}>
-                  한 번에 풀 퀴즈 개수: <Text style={styles.boldText}>{effectiveBatchSize}개 / {maxAvailableCount}개</Text>
-                </Text>
-                <View style={styles.stepperRow}>
-                  <TouchableOpacity 
-                    style={styles.stepBtn}
-                    onPress={() => setBatchSize(prev => Math.max(10, prev - 10))}
-                  >
-                    <Text style={styles.stepBtnText}>-</Text>
-                  </TouchableOpacity>
-
-                  {/* 현재 동적으로 계산된 effectiveBatchSize를 표기 */}
-                  <Text style={styles.stepValue}>{effectiveBatchSize}</Text>
-
-                  <TouchableOpacity 
-                    style={styles.stepBtn}
-                    // '아는 단어 포함'이면 전체 단어 수까지, 아니면 studyCount까지만 증가 허용
-                    onPress={() => setBatchSize(prev => Math.min(maxAvailableCount, prev + 10))}
-                  >
-                    <Text style={styles.stepBtnText}>+</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
+          <View style={styles.completionCardOnly}>
+            <Text style={styles.completionEmoji}>🎉</Text>
+            <Text style={styles.completionTitle}>스키밍 완료!</Text>
+            <Text style={styles.completionSubtitle}>
+              알고 있어요: {knownCount}개 / 학습할 단어: {studyCount}개
+            </Text>
+          </View>
         </View>
 
         <View style={styles.bottomActionRow}>
-          {!showConfigModal ? (
-            <>
-              <TouchableOpacity 
-                style={styles.actionButton} 
-                onPress={() => navigation.goBack()}
-              >
-                <Text style={styles.actionBtnText}>메인으로 나가기</Text>
-              </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={async () => {
+              // 💡 1. 이번 세션에서 테스트해야 할 총 단어 개수를 최초 계산
+              const targetList = vocabularyData.filter(item => item.status !== 'known');
+              const initialCount = targetList.length > 0 ? targetList.length : vocabularyData.length;
 
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.darkActionButton]} 
-                onPress={() => setShowConfigModal(true)}
-              >
-                <Text style={[styles.actionBtnText, styles.whiteText]}>퀴즈 시작하기</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity 
-                style={styles.actionButton} 
-                onPress={() => setShowConfigModal(false)}
-              >
-                <Text style={styles.actionBtnText}>취소</Text>
-              </TouchableOpacity>
+              // 💡 2. 최초 총 개수를 스토리지에 박아둠 (이후 TestScreen에서 덮어쓰지 않음)
+              await saveTestTotalCount(initialCount);
+              await saveLearningStep('test');
+              navigation.goBack();
+            }}
+          >
+            <Text style={styles.actionBtnText}>메인으로 나가기</Text>
+          </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={[styles.actionButton, styles.darkActionButton, styles.emphasizedBtn]} 
-                onPress={() => {
-                  navigation.replace("Test", { includeKnown, batchSize });
-                }}
-              >
-                <Text style={[styles.actionBtnText, styles.whiteText, styles.emphasizedText]}>시작하기</Text>
-              </TouchableOpacity>
-            </>
-          )}
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.darkActionButton, styles.emphasizedBtn]} 
+            onPress={async () => {
+              // 💡 1. 이번 세션에서 테스트해야 할 총 단어 개수를 최초 계산
+              const targetList = vocabularyData.filter(item => item.status !== 'known');
+              const initialCount = targetList.length > 0 ? targetList.length : vocabularyData.length;
+
+              // 💡 2. 최초 총 개수를 스토리지에 박아둠 (이후 TestScreen에서 덮어쓰지 않음)
+              await saveTestTotalCount(initialCount);
+              await saveLearningStep('test');
+
+              navigation.replace("Test");
+            }}
+          >
+            <Text style={[styles.actionBtnText, styles.whiteText, styles.emphasizedText]}>테스트 시작하기</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
