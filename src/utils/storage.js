@@ -14,7 +14,7 @@ export async function saveVocabularyState(vocabList) {
 export async function loadVocabularyState(defaultList) {
   try {
     // [개발 중 초기화 필요 시 아래 주석 해제]
-    await AsyncStorage.removeItem(VOCAB_STORAGE_KEY);
+    // await AsyncStorage.removeItem(VOCAB_STORAGE_KEY);
 
     const jsonValue = await AsyncStorage.getItem(VOCAB_STORAGE_KEY);
     if (jsonValue != null) {
